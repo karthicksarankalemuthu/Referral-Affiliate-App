@@ -1,11 +1,16 @@
+//@ts-nocheck
 {
   "compilerOptions": {
     "target": "ESNext",                                  
     "module": "ESNext",                                  
     "moduleResolution": "node",                          
-    "esModuleInterop": true,                             
-    "forceConsistentCasingInFileNames": true,            
-    "strict": true,                                      
-    "skipLibCheck": true                                 
+    "esModuleInterop": true,  
+    "forceConsistentCasingInFileNames": true,  
+    "noImplicitAny": true,                              
+    "allowSyntheticDefaultImports": true,           
+    "noEmit": true,                             
+    "skipLibCheck": true,
+    "alwaysStrict":false
+                                  
   }
 }

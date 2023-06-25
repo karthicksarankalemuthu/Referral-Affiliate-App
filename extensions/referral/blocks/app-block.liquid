@@ -1,0 +1,31 @@
+
+
+  <div id="container">
+  <p id="title"></p>
+  <p id="des"></p>
+  <input type="email" id="text" required placeholder="Enter your email"/>
+  <button   id="button" >
+    
+  </button>
+</div>
+<button id="btn"></button>
+<button id="closebtn">&times;</button>
+
+<span></span>
+
+{% schema %}
+  {
+    "name": "AppEmbed",
+    "target": "body",
+    "stylesheet": "btn.css",
+    "javascript": "btn.js",
+    "settings": [],
+    "enabled_on": {
+        "templates": ["index"]
+     }
+  }
+{% endschema %}
+
+<!-- "enabled_on": {
+  //  "templates": ["index"]
+//  }-->

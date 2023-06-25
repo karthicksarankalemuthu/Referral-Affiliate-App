@@ -1,86 +1,74 @@
-import {
-  Card,
-  Page,
-  Layout,
-  TextContainer,
-  Image,
-  Stack,
-  Link,
-  Heading,
-} from '@shopify/polaris'
-import { TitleBar } from '@shopify/app-bridge-react'
+import { Page,Grid,Text,LegacyCard,LegacyStack} from "@shopify/polaris";
+import Navbar from "../components/navbar";
+import { useAuthenticatedFetch  } from "../hooks";
+import { useEffect, useState } from "react";
 
-import { trophyImage } from '../assets'
-
-import { ProductsCard } from '../components'
 
 export default function HomePage() {
+ 
+  const fetch=useAuthenticatedFetch();
+  
+
+
+  const[totalmember,settotalmember]=useState("");
+  const[refcustomer,setrefcustomer]=useState("");
+  const[revenue,setrevenue]=useState("");
+  
+
+
+  useEffect(()=>{(async()=>{
+    
+    let res= await fetch("/api/get_total_member")
+   let res1=await fetch("/api/get_total_customer")
+   let res2=await fetch("/api/get_total_revenue") 
+  
+    let res0=await res.json()
+   let res10=await res1.json()
+   let res20=await res2.json()
+   
+      
+      settotalmember(res0?.msg)
+     setrefcustomer(res10.msg)
+      setrevenue(res20.msg._sum.amount)
+     
+    })()
+      
+
+  },[])
+
+
+ 
+
   return (
-    <Page narrowWidth>
-      <TitleBar title="App name" primaryAction={null} />
-      <Layout>
-        <Layout.Section>
-          <Card sectioned>
-            <Stack
-              wrap={false}
-              spacing="extraTight"
-              distribution="trailing"
-              alignment="center"
-            >
-              <Stack.Item fill>
-                <TextContainer spacing="loose">
-                  <Heading>Nice work on building a Shopify app 🎉</Heading>
-                  <p>
-                    Your app is ready to explore! It contains everything you
-                    need to get started including the{' '}
-                    <Link url="https://polaris.shopify.com/" external>
-                      Polaris design system
-                    </Link>
-                    ,{' '}
-                    <Link url="https://shopify.dev/api/admin-graphql" external>
-                      Shopify Admin API
-                    </Link>
-                    , and{' '}
-                    <Link
-                      url="https://shopify.dev/apps/tools/app-bridge"
-                      external
-                    >
-                      App Bridge
-                    </Link>{' '}
-                    UI library and components.
-                  </p>
-                  <p>
-                    Ready to go? Start populating your app with some sample
-                    products to view and test in your store.{' '}
-                  </p>
-                  <p>
-                    Learn more about building out your app in{' '}
-                    <Link
-                      url="https://shopify.dev/apps/getting-started/add-functionality"
-                      external
-                    >
-                      this Shopify tutorial
-                    </Link>{' '}
-                    📚{' '}
-                  </p>
-                </TextContainer>
-              </Stack.Item>
-              <Stack.Item>
-                <div style={{ padding: '0 20px' }}>
-                  <Image
-                    source={trophyImage}
-                    alt="Nice work on building a Shopify app"
-                    width={120}
-                  />
-                </div>
-              </Stack.Item>
-            </Stack>
-          </Card>
-        </Layout.Section>
-        <Layout.Section>
-          <ProductsCard />
-        </Layout.Section>
-      </Layout>
+    <Page fullWidth >
+    <Grid>
+    <Grid.Cell columnSpan={{xs: 6, sm: 6, md: 6, lg:3, xl: 3}} >
+    <Navbar/>
+    </Grid.Cell>
+    <Grid.Cell columnSpan={{xs: 6, sm: 6, md: 6, lg: 9, xl: 9}}>
+    <Text variant="heading3xl" as="h2">
+       Dashboard
+      </Text>
+      <br/>
+
+      <LegacyStack distribution="fill">
+      <LegacyCard title="Total Members" sectioned>
+       <Text variant="headingXl" fontWeight="bold" as="h1">{ totalmember? totalmember :'0'}</Text>
+      </LegacyCard>
+      <LegacyCard title="Total Referred Customer"sectioned>
+      <Text variant="headingXl" fontWeight="bold" as="h1">{refcustomer ? refcustomer :'0'}</Text>
+      </LegacyCard>
+      <LegacyCard title="Total Revenue"sectioned>
+      <Text variant="headingXl" fontWeight="bold" as="h1">₹{revenue ? revenue :'0'}</Text>
+      </LegacyCard>
+        </LegacyStack>
+        
+
+      
+  
+    
+    </Grid.Cell>
+    </Grid>
     </Page>
-  )
+  );
 }

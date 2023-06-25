@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:karthick@1@localhost:5432/affiliate-referral-app?schema=public"
+}
+
+
+model shop{
+  id String @unique
+  name String
+  settings String[]
+}
+
+model campaign{
+  id Int  @default(autoincrement())
+  uuid String @id @default(uuid())
+   pricerule_name String
+   discount_type String
+   value String
+   start_date String
+   end_date String
+   camp_type String
+   min_val String
+   order_currency String
+   order_date String
+   order_emaildomain String
+   activate Boolean
+   priority String
+}
+
+model members{
+  id Int  @default(autoincrement())
+   uuid String @id @default(uuid())
+   name String
+   email String @unique
+   link String
+   enable Boolean
+}
+
+model popup_template{
+  id Int  @default(autoincrement())
+  uuid String @id @default(uuid())
+  title String
+  des String
+  popup_bg String
+  btn_text String
+  btn_bg String
+  text_color String
+  enable Boolean
+}
+
+model mail_template{
+  id Int  @default(autoincrement())
+  uuid String @id @default(uuid())
+  title String
+  des String
+  bg String
+  btn_text String
+  btn_bg String
+  text_color String
+  type_of String
+  enable Boolean
+}
+
+
+model commission{
+   id Int @default(autoincrement())
+   uuid String @id @default(uuid())
+   name String
+   email String @unique
+   amount String
+   pay String
+   last_update DateTime @default(now())
+}
+
+model customers{
+   id Int @default(autoincrement())
+   uuid String @id @default(uuid())
+   name String
+   email String @unique
+   customer_id String @unique
+}
+model traker{
+   id Int @default(autoincrement())
+   uuid String @id @default(uuid())
+   advocate_id String
+   referral_email String @unique
+   discount_code String @unique
+}
+
+model sales{
+     id Int @default(autoincrement())
+   uuid String @id @default(uuid())
+   item String
+   amount Int
+   advocate_id String
+   type String
+   referral_email String
+}
+
+
+  model influencer{
+   id Int @default(autoincrement())
+   uuid String @id @default(uuid())
+   name String
+   email String @unique
+   link String
+   enable Boolean
+  }
+
+  model payout{
+    id Int @default(autoincrement())
+   uuid String @id @default(uuid())
+   aff_email String @unique
+   type String
+   value Int
+  }
+
+  model member_discount{
+   id Int @default(autoincrement())
+   uuid String @id @default(uuid())
+   email String @unique
+   discounts String[]
+  }
+
+  
+//npx prisma generate
+//npx prisma migrate dev --name init --create-only
+//npx prisma migrate deploy
