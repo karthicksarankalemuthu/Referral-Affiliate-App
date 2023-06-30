@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:karthick@1@localhost:5432/affiliate-referral-app?schema=public"
+  url      = "postgresql://postgres:karthick@1@localhost:5432/referral_affiliate_app?schema=public"
 }
 
 
@@ -29,7 +29,7 @@ model campaign{
    order_date String
    order_emaildomain String
    activate Boolean
-   priority String
+   priority Int
 }
 
 model members{
@@ -50,6 +50,7 @@ model popup_template{
   btn_text String
   btn_bg String
   text_color String
+  destination String @default("popup")
   enable Boolean
 }
 

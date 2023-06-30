@@ -15,6 +15,7 @@ export default function affiliate() {
 
 
       const [data,setdata]=useState([]);
+      const [oldlist,setoldlist]=useState([]);
       const[btn,setbtn]=useState(false);
       const[min,setmin]=useState();
       const[currency,setcurrency]=useState();
@@ -61,7 +62,9 @@ export default function affiliate() {
     let res1=await res.json()
        console.log(res)
       setdata(res1)
+      setoldlist(res1)
       setloading(false)
+      console.log(res1)
 
   }
 
@@ -155,8 +158,32 @@ function deletecamp(uuid:string){
    setloading(true)
  }
 
-
+ let newlist:string[]=[]
+ let olddlist:string[]=[]
+ data.map((c)=>{newlist.push(c.priority)})
+console.log(newlist)
+console.log(data)
+oldlist.map((c)=>{olddlist.push(c.priority)})
  function priority(){
+ 
+  (async()=>{
+    //console.log(p)
+     let res= await fetch("/api/Affiliate_campa_priority",{
+       method: 'PUT',
+       headers: { 
+        'Accept': 'application/json',
+        "Content-Type": "application/json" },
+      body: JSON.stringify({
+       newlist:newlist,
+      oldlist:olddlist})
+     })
+   res=await res.json()
+      console.log(res)
+    })()
+    setloading(true)
+    setbtn(false)
+  }
+ /*function priority(){
   (async()=>{
      let res= await fetch("/api/referral_camp_priority/"+data[0]?.uuid,{
        method: 'PUT',
@@ -165,7 +192,7 @@ function deletecamp(uuid:string){
       console.log(res)
    })()
    setbtn(false)
- }
+ }*/
 
 
 

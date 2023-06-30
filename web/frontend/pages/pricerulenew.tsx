@@ -30,7 +30,7 @@ export default function Pricerulenew() {
     const[selectcamptype,setselectcamptype]=useState<string[]>(['Referral']);
     const [error, seterror] = useState("");
     const [min, setmin] = useState("");
-    const [orderdate, setorderdate] = useState("");
+    const [orderdate, setorderdate] = useState(moment().format('DD/MM/YYYY'));
     const [currency, setcurrency] = useState<string[]>(['INR']);
     const [emaildomain, setemaildomain] = useState<string[]>(['com']);
  
@@ -45,7 +45,7 @@ export default function Pricerulenew() {
       enddate:Joi.date().greater(date).required(),
       camptype:Joi.string().required(),
       minvalue:Joi.string().required(),
-      order_date:Joi.string().required(),
+      order_date:Joi.date().required(),
       order_currency:Joi.string().required(),
       order_emaildomain:Joi.string().required(),
     }); 
@@ -79,7 +79,7 @@ export default function Pricerulenew() {
     enddate:da,
     camptype:selectcamptype.toString(),
     minvalue:min,
-    order_date:orderdate,
+    order_date:`${moment(`${orderdate}`,'DD/MM/YYYY').format('MM-DD-YYYY')}`,
     order_currency:currency.toString(),
     order_emaildomain:emaildomain.toString()
     

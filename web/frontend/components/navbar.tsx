@@ -41,6 +41,13 @@ import { useState } from "react";
                 url: '#',
                 excludePaths: ['#'],
                 disabled:false,
+                label: 'Sales',
+                onClick:()=>{navigate("/refe_sale")}
+              },
+              {
+                url: '#',
+                excludePaths: ['#'],
+                disabled:false,
                 label: 'Settings',
                 onClick:()=>{navigate("/settings")}
               }],
@@ -67,15 +74,22 @@ import { useState } from "react";
                   disabled:false,
                   label: 'Influencer',
                   onClick:()=>{navigate("/influencer")}
+                },
+                {
+                  url: '#',
+                  excludePaths: ['#'],
+                  disabled:false,
+                  label: 'Sales',
+                  onClick:()=>{navigate("/aff_sale")}
+                },
+                {
+                  url: '#',
+                  excludePaths: ['#'],
+                  disabled:false,
+                  label: 'Settings',
+                  onClick:()=>{navigate("/setting")}
                 }
               ],
-            },
-            {
-              url: '#',
-              excludePaths: ['#'],
-              label: 'Sales',
-              icon:QuickSaleMajor,
-              onClick:()=>{navigate("/sale")}
             },
            
               {
@@ -92,7 +106,7 @@ import { useState } from "react";
                 icon:TransactionFeeRupeeMajor,
                 onClick:()=>{navigate("/commission")}
               },
-              {
+              /*{
                 url: '#',
                 excludePaths: ['#'],
                 label: 'Setting',
@@ -107,7 +121,7 @@ import { useState } from "react";
                   label: 'Mail Templates',
                   onClick:()=>{navigate("/template")}
                 },]
-              },
+              },*/
             
           ]}
         

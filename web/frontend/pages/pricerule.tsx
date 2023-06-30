@@ -16,6 +16,7 @@ export default function pricerule() {
 
 
       const [data,setdata]=useState([]);
+      const [oldlist,setoldlist]=useState([]);
       const[loading,setloading]=useState(false)
       const[btn,setbtn]=useState(false);
       const[min,setmin]=useState();
@@ -60,25 +61,28 @@ export default function pricerule() {
   const getdata=async()=>{
     let res= await fetch("/api/get_referral_camp")
     let res1=await res.json()
-       console.log(res)
+       console.log(res1)
       setdata(res1)
       setloading(false)
-
+      setoldlist(res1)
   }
 
   useEffect(()=>{
     getdata()
 },[loading])
   
+console.log(data)
 
   const onSortEnd = (e:any) =>{
     var newTodos = arrayMove(data, e.oldIndex, e.newIndex )
     setdata(newTodos)
     setbtn(true)
-    
+    console.log(newTodos)
   };
 
-  
+
+
+
 const ToDoList = ({items}:any) =>{
   return (
     <table style={{border:'1px solid #F9FAFB',width:'100%',borderRadius:'10px',borderSpacing:'10px'}}>
@@ -167,8 +171,32 @@ const ToDoList = ({items}:any) =>{
    }
 
 
+   let newlist:string[]=[]
+   let olddlist:string[]=[]
+   data.map((c)=>{newlist.push(c.priority)})
+  console.log(newlist)
+  console.log(data)
+  oldlist.map((c)=>{olddlist.push(c.priority)})
 
-  function priority(){
+   function priority(){
+    (async()=>{
+       let res= await fetch("/api/campa_priority",{
+         method: 'PUT',
+         headers: { 
+          'Accept': 'application/json',
+          "Content-Type": "application/json" },
+        body: JSON.stringify({
+         newlist:newlist,
+        oldlist:olddlist})
+       })
+     res=await res.json()
+        console.log(res)
+      })()
+      setloading(true)
+      setbtn(false)
+    }
+
+  /*function priority(){
     (async()=>{
       if(data[0]?.camp_type=='Referral'){
        let res= await fetch("/api/referral_camp_refe_priority/"+data[0]?.uuid,{
@@ -198,7 +226,7 @@ const ToDoList = ({items}:any) =>{
        }
      })()
      setbtn(false)
-   }
+   }*/
    
 
  

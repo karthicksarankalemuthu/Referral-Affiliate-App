@@ -1,4 +1,4 @@
-import {  Page,hsbToRgb,HSBAColor,rgbString,Button,Card,ColorPicker,Grid,Icon,Form,FormLayout,TextField,Text,Popover,LegacyCard,LegacyStack,AlphaCard} from "@shopify/polaris";
+import {  Page,hsbToRgb,HSBAColor,rgbString,ChoiceList,Button,Card,ColorPicker,Grid,Icon,Form,FormLayout,TextField,Text,Popover,LegacyCard,LegacyStack,AlphaCard} from "@shopify/polaris";
 import {
   ArrowLeftMinor
 } from '@shopify/polaris-icons';
@@ -28,6 +28,7 @@ export default function editpopup() {
   const[uuid,setid]=useState();
   const[enable,setenable]=useState(); 
   const[btntext,setbtntext]=useState("");
+  const[selecttype,setselecttype]=useState<string[]>(['inline']);
   const [color, setColor] = useState({
    brightness:0.74375,
    hue:300,
@@ -46,7 +47,7 @@ export default function editpopup() {
     alpha:1
   });
   
-  
+  const typechange = useCallback((value:string[]) =>  setselecttype(value), []);
  
 useEffect(()=>{
   let c=hsbToRgb(color)
@@ -76,6 +77,8 @@ useEffect(()=>{(async()=>{
   setbtntext(res1[0]?.btn_text)
   setdes(res1[0]?.des)
   setid(res1[0]?.uuid)
+  selecttype.includes(res1[0]?.destination)
+ 
   setenable(res1[0].enable)
   //console.log(res[0].des)
 
@@ -139,7 +142,8 @@ const submit=async()=>{
      btn_text:btntext,
      btn_bg:btnback,
      text_color: textcolor,
-     enable:enable
+     enable:enable,
+     destination:selecttype.toString()
    
     })
   })
@@ -186,6 +190,21 @@ const submit=async()=>{
                     />
                     </Card.Subsection>
                     </Card.Section>
+                    <Card.Section>
+                  <Card.Subsection>
+                  <ChoiceList
+                  title="TYPE"
+                  choices={[
+                  {label: 'Inline', value: 'inline'},
+                  {label: 'popup', value: 'popup'}
+                  ]}
+                  selected={selecttype}
+                  onChange={typechange}
+                  />
+                  </Card.Subsection>
+                  </Card.Section>
+
+
                     <Card.Section title="POPUP-BACKGROUND">
                         <Card.Subsection>
                     <Popover

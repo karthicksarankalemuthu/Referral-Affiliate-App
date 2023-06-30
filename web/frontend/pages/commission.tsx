@@ -60,7 +60,7 @@ function click(){
  function commission(){
     (async()=>{
        let res= await fetch("/api/update_pay/"+uuid,{
-         method: 'PUT',
+         method: 'Put',
          headers: { 
             'Accept': 'application/json',
             "Content-Type": "application/json" },
@@ -126,7 +126,7 @@ const rowMarkup = data?.map(
       <IndexTable.Cell>{moment(last_update).format('DD/MM/YYYY')}</IndexTable.Cell>
       <IndexTable.Cell> <Button primary onClick={()=>{Pay(uuid)}}>Pay</Button></IndexTable.Cell>
       <IndexTable.Cell> <Button onClick={()=>{navigate('/comm_update/'+uuid)}}>update</Button></IndexTable.Cell>
-      <IndexTable.Cell> <Button onClick={()=>{deletemember(uuid)}}>delete</Button></IndexTable.Cell>
+      <IndexTable.Cell> <Button destructive onClick={()=>{deletemember(uuid)}}>delete</Button></IndexTable.Cell>
     </IndexTable.Row>
   ),
 ); 

@@ -29,13 +29,13 @@ btn.addEventListener("click",()=>{
     
 })
  }
- 
+ if(closebtn){
  closebtn.addEventListener("click",()=>{
   popup.style.visibility="hidden";
   btn.style.visibility="visible";
   closebtn.style.visibility="hidden";
  })
-
+ }
  if(closepopup){
  closepopup.addEventListener("click",()=>{
   dispopup.style.visibility="hidden";
@@ -51,7 +51,7 @@ btn.addEventListener("click",()=>{
  
  
 
-
+if(submit){
   submit.addEventListener("click",async(e)=>{
   const queryString = window.location.search;
  const urlParams = new URLSearchParams(queryString);
@@ -86,6 +86,7 @@ btn.addEventListener("click",()=>{
    
        
  })
+}
  
  if(get){
  get.addEventListener("click",async(e)=>{
@@ -197,9 +198,7 @@ const en=res[0].enable;
 
   }
 
-
-  
-  getui()
+  //getui()
 
 
 

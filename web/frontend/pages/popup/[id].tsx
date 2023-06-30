@@ -7,24 +7,19 @@ import { useAuthenticatedFetch  } from "../../hooks";
 import { useEffect, useState,useCallback} from "react";
 import Navbar from "../../components/navbar";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import { type } from "os";
-import { string } from "joi";
 
 
 
 
-export default function edittemplate() {
+export default function Editpopup() {
 
-
-  
+  const fetch = useAuthenticatedFetch();
+  const navigate=useNavigate();
   const app = useAppBridge();
-  const fetch=useAuthenticatedFetch();
-  const navigate = useNavigate();
-
   const url=window.location.href;
   const parts = url.split('/');
   const id=parts.at(-1)
-
+console.log(id)
   const[data,setdata]=useState();
   const[back,setback]=useState("");
   const[btnback,setbtnback]=useState("");
@@ -34,7 +29,6 @@ export default function edittemplate() {
   const[uuid,setid]=useState();
   const[enable,setenable]=useState(); 
   const[btntext,setbtntext]=useState("");
-  const[typeoftemplate,settypeoftemplate]=useState("");
   const [color, setColor] = useState({
    brightness:0.74375,
    hue:300,
@@ -72,20 +66,19 @@ console.log(color2)
 },[color,color1,color2])
 
 useEffect(()=>{(async()=>{
-  let res= await fetch("/api/get_update_email_template/"+id)
- let res1=await res.json()
+  let res= await fetch("/api/get_popup_metaobject")
+  let res1=await res?.json()
      console.log(res1)
     setdata(res1)
-  setback(res1?.bg)
-  setbtnback(res1?.btn_bg)
-  settextcolor(res1?.text_color)
-  settitle(res1?.title);
-  setbtntext(res1?.btn_text)
-  setdes(res1?.des)
-  setid(res1?.uuid)
-  setenable(res1?.enable)
-  settypeoftemplate(res1?.type_of)
-  //console.log(res[0].des)
+  setback(res1.fields[2].value)
+  setbtnback(res1.fields[4]?.value)
+  settextcolor(res1.fields[5]?.value)
+  settitle(res1.fields[0]?.value);
+  setbtntext(res1.fields[3]?.value)
+  setdes(res1.fields[1]?.value)
+  //setid(res1.fildes[0]?.uuid)
+  setenable(res1.fields[6].value)
+  //console.log(res[0].des)*/
 
 })()
 },[])
@@ -136,14 +129,14 @@ useEffect(()=>{(async()=>{
  console.log(color)
 
 const submit=async()=>{
- let res= await fetch("/api/editmail_template/"+uuid, {
+ let res= await fetch("/api/editpopup_metaobject", {
     method:"PUT",
     headers: { 
       "Content-Type": "application/json" },
     body: JSON.stringify({
      title:title,
      des:des,
-     bg:back,
+     popup_bg:back,
      btn_text:btntext,
      btn_bg:btnback,
      text_color: textcolor,
@@ -152,65 +145,14 @@ const submit=async()=>{
     })
   })
   //console.log(e)
- // res= await res.json()
+ let res1= await res.json()
+ console.log(res1)
   console.log(res)
   if(res.ok){
-    if(typeoftemplate=="Referral"){
-      navigate('/settings')
-    }
-    else if(typeoftemplate=="Affiliate"){
-      navigate('/setting')
-    }
-    else if(typeoftemplate=="member_invite"){
-      navigate('/settings')
-    }
-    else{
-      navigate('/setting')
-    }
-   
+    navigate('/settings')
   }
 }
-  let template
- if(typeoftemplate=="Referral"){
-  template=<div style={{backgroundColor:back,width:'300px',height:'270px',borderRadius:'10px',marginLeft:'100px'}}>
-  <h1 style={{fontSize:'20px',fontWeight:600,color:textcolor,marginLeft:'30px'}}>{title}</h1>
-  <div style={{marginLeft:'20px',marginTop:'30px',color:textcolor}}>  <Text variant="headingSm" as="h1">{des}
-   </Text></div>
-   
-   <div style={{width:'200px',height:'30px',border:'2px dashed black',margin:'40px'}}><center style={{display:'flex',alignItems:'center',justifyContent:'center',color:textcolor}}>COUPON</center></div>
-   <button style={{width:'100px',height:'35px',borderRadius:'5px',marginLeft:'100px',backgroundColor:btnback,color:textcolor}}>{btntext}</button>
-   </div>
- }
- else if(typeoftemplate=="Affiliate"){
-    template=<div style={{backgroundColor:back,width:'300px',height:'270px',borderRadius:'10px',marginLeft:'100px'}}>
-    <h1 style={{fontSize:'20px',fontWeight:600,color:textcolor,marginLeft:'30px'}}>{title}</h1><br/>
-    <h2 style={{color:textcolor}}>Hey [Influencer_name]</h2>
-    <div style={{marginLeft:'20px',marginTop:'30px',color:textcolor}}>  <Text variant="headingSm" as="h1">{des}
-     </Text></div>
-    
-     <button style={{width:'100px',height:'35px',borderRadius:'5px',marginLeft:'100px',marginTop:'20px',backgroundColor:btnback,color:textcolor}}>{btntext}</button>
-     </div>
- }
- else if(typeoftemplate=="member_invite"){
-    template=<div style={{backgroundColor:back,width:'300px',height:'270px',borderRadius:'10px',marginLeft:'100px'}}>
-    <h1 style={{fontSize:'20px',fontWeight:600,color:textcolor,marginLeft:'30px'}}>{title}</h1><br/>
-    <h2 style={{color:textcolor}}>Hey [Member_name]</h2>
-    <div style={{marginLeft:'20px',marginTop:'30px',color:textcolor}}>  <Text variant="headingSm" as="h1">{des}
-     </Text></div>
-    
-     <button style={{width:'100px',height:'35px',borderRadius:'5px',marginLeft:'100px',marginTop:'20px',backgroundColor:btnback,color:textcolor}} >{btntext}</button>
-     </div>
- }
- else{
-    template=<div style={{backgroundColor:back,width:'300px',height:'270px',borderRadius:'10px',marginLeft:'100px'}}>
-    <h1 style={{fontSize:'20px',fontWeight:600,color:textcolor,marginLeft:'30px'}}>{title}</h1>
-    <div style={{marginLeft:'20px',marginTop:'30px',color:textcolor}}>  <Text variant="headingSm" as="h1">{des}
-     </Text></div>
-     </div>
- }
-
-
-
+  
 
   return(
     <Page fullWidth >
@@ -224,20 +166,20 @@ const submit=async()=>{
 <Form  onSubmit={submit}>
                <FormLayout>
            
-                 <Card  title="EDIT MAIL TEMPLATE">
-                 <Card.Section title="EMAIL TITLE">
+                 <Card  title="EDIT TEMPLATE">
+                 <Card.Section>
                     <TextField
-                      label=""
+                      label="POPUP TITLE"
                       placeholder="Title"
                       autoComplete="off" 
                       value={title}
                       onChange={settitle}
                     />
                     </Card.Section>
-                    <Card.Section title="DESCRIPTION">
+                    <Card.Section>
                         <Card.Subsection>
                     <TextField
-                      label=""
+                      label="DESCRIPTION"
                       placeholder="description"
                       autoComplete="off"  
                       multiline={3}   
@@ -246,7 +188,7 @@ const submit=async()=>{
                     />
                     </Card.Subsection>
                     </Card.Section>
-                    <Card.Section title="MAIL-BACKGROUND">
+                    <Card.Section title="POPUP-BACKGROUND">
                         <Card.Subsection>
                     <Popover
         active={popoverActive}
@@ -260,10 +202,10 @@ const submit=async()=>{
                         
                         </Card.Subsection>
                     </Card.Section>
-                    <Card.Section  title="BUTTON -TEXT">
+                    <Card.Section>
                         <Card.Subsection>
                     <TextField
-                      label=""
+                      label="BUTTON-TEXT"
                       placeholder="button text"
                       autoComplete="off"   
                       value={btntext}
@@ -309,9 +251,24 @@ const submit=async()=>{
            
            
         <div style={{marginTop: '150px'}}>
-        <LegacyCard title="Preview" sectioned>
-     {template}
-   </LegacyCard>
+        <LegacyCard  title="Preview" sectioned >
+        <div style={{backgroundColor:back,width:'450px',height:'200px',borderRadius:'20px'}}>
+         <div style={{marginLeft:'70px',marginTop:'20px',color:textcolor}}>  <Text variant="headingLg" as="h1">{title}</Text></div> <br/>
+         <div style={{marginLeft:'40px',color:textcolor}}>  <Text variant="headingSm" as="h4">{des}
+         </Text></div>
+          <LegacyStack>
+        <div style={{marginLeft:'40px',marginTop:'30px'}} > <TextField
+          label=""
+        placeholder="enter the mail"
+      type="email"
+      autoComplete="off"
+      connectedRight={<button style={{width:'100px',height:'35px',backgroundColor:btnback,color:textcolor}}>{btntext}</button>}
+    /></div> 
+          </LegacyStack>
+          
+          
+          </div>
+          </LegacyCard>
           </div>
 
         </Grid.Cell>
@@ -319,4 +276,3 @@ const submit=async()=>{
         </Page>
   )
 }
-

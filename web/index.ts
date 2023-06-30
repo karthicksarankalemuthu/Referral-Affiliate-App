@@ -7,7 +7,7 @@ import { GraphqlQueryError} from "@shopify/shopify-api";
 import shopify from "./shopify.js";
 import GDPRWebhookHandlers from "./gdpr.js";
 import pkg from '@prisma/client';
-import { create_discount } from "./mutation.js";
+import { get_single_metaobject,update_popup_metaobject,create_discount,get_metaobject_defination,metaobject,metaobject_defination,get_metaobject, update_metaobject_defination, delete_metaobject_fielddefination, delete_metaobject, delete_metaobject_defination, enable_popup_metaobject, update_metaobject} from "./mutation.js";
 import { advocate_mail ,influencer_mail,member_mail,sales_mail} from "./mail.js";
 import { Engine} from 'json-rules-engine';
 import moment from 'moment';
@@ -63,7 +63,7 @@ try{
     order_date:order_date,
     order_emaildomain:order_emaildomain,
     activate:true,
-    priority:'0'
+    priority:0
   }})
     console.log(send)
     res.status(200).send(send)
@@ -214,14 +214,14 @@ console.log(err)
 //edit popup template
 
 app.put("/api/editpopup_template/:uuid",async(req,res)=>{
-  const{title,des,popup_bg,btn_text,btn_bg,text_color,enable}=req.body;
+  const{title,des,popup_bg,btn_text,btn_bg,text_color,enable,destination}=req.body;
   const id=req.params.uuid
 
 try{
    const send=await prisma.popup_template.update(
     {where:{uuid:id},data:{
     title:title,
-    des:des,popup_bg:popup_bg,btn_text:btn_text,btn_bg:btn_bg,text_color:text_color,enable:enable
+    des:des,popup_bg:popup_bg,btn_text:btn_text,btn_bg:btn_bg,text_color:text_color,enable:enable,destination:destination
   }})
     console.log(send)
     res.status(200).send(send)
@@ -231,7 +231,6 @@ catch(err){
 
 }
 })
-
 
 // get the popup template
 
@@ -249,7 +248,19 @@ app.get("/api/get_popup_template",async(req,res)=>{
 
 app.get("/api/get_referral_email_template",async(req,res)=>{
   try{  
-    const getdata =await prisma.mail_template.findMany({where:{type_of:'Referral'}});
+    const getdata =await prisma.mail_template.findMany({where:{OR:[{type_of:'Referral'},{type_of:'member_invite'}]}});
+    res.json(getdata)  
+  }
+  catch(err){
+    console.log(err)
+  }
+})
+
+// get the Affiliate email template
+
+app.get("/api/get_affiliate_email_template",async(req,res)=>{
+  try{  
+    const getdata =await prisma.mail_template.findMany({where:{OR:[{type_of:'Affiliate'},{type_of:'sales'}]},orderBy:{id:'asc'}});
     res.json(getdata)  
   }
   catch(err){
@@ -319,7 +330,7 @@ catch(err){
 
 app.get("/api/get_referral_camp",async(req,res)=>{
   try{  
-    const getdata =await prisma.campaign.findMany({where:{OR:[{camp_type:'Referral'},{camp_type:'Advocate'}]},orderBy:{_relevance:{fields:['priority'],search:'1',sort:'desc'}}});
+    const getdata =await prisma.campaign.findMany({where:{OR:[{camp_type:'Referral'},{camp_type:'Advocate'}]},orderBy:{priority:'asc'}});
     res.json(getdata)  
   }
   catch(err){
@@ -331,7 +342,7 @@ app.get("/api/get_referral_camp",async(req,res)=>{
 
 app.get("/api/get_affiliate_camp",async(req,res)=>{
   try{  
-    const getdata =await prisma.campaign.findMany({where:{camp_type:'Affiliate'},orderBy:{_relevance:{fields:['priority'],search:'1',sort:'desc'}}});
+    const getdata =await prisma.campaign.findMany({where:{camp_type:'Affiliate'},orderBy:{priority:'asc'}});
     res.json(getdata)  
   }
   catch(err){
@@ -374,60 +385,57 @@ console.log(err)
 })
 
 
-// enable priority for affiliate
 
-app.put("/api/referral_camp_priority/:id",async(req,res)=>{
-  const uuid=req.params.id;
+// referral advocate priority
+
+app.put("/api/campa_priority",async(req,res)=>{
+  const {newlist,oldlist}=req.body
 try{  
-  const get=await prisma.campaign.findUnique({where:{uuid:uuid}})
- // res.json(get)
-  const all=await prisma.campaign.updateMany({where:{activate:true,camp_type:'Affiliate'},data:{priority:'0'},})
-const getdata =await prisma.campaign.update({where:{uuid:uuid},data:{priority:'1'},});
-//res.json(getdata)
-console.log(all)
-console.log(getdata)   
-res.status(200).send(getdata)
+ // const getlist=await prisma.campaign.findMany({where:{OR:[{camp_type:'Referral'},{camp_type:'Advocate'}]},orderBy:{id:'asc'}})
+ console.log(newlist)
+ console.log(oldlist)
+  //console.log(pa)
+
+  let uid:string[]=[]
+  for(let i=0;i<oldlist.length;i++){
+   const list=await prisma.campaign.findFirst({where:{priority:newlist[i]}})
+  uid.push(list.uuid)
+  //console.log(list.uuid)
+  }
+  for (let i= 0; i < oldlist.length; i++) {
+    //console.log(uid[i])
+   const getdata =await prisma.campaign.update({where:{uuid:`${uid[i]}`},data:{priority:oldlist[i]}});  
+ // console.log(getdata)
+  }
 }
 catch(err){
 console.log(err)
 }
 })
 
+// affiliate priority
 
-
-// enable priority for Referral 
-
-app.put("/api/referral_camp_refe_priority/:id",async(req,res)=>{
-  const uuid=req.params.id;
+app.put("/api/affiliate_campa_priority",async(req,res)=>{
+  const {newlist,oldlist}=req.body
 try{  
-  const get=await prisma.campaign.findUnique({where:{uuid:uuid}})
- // res.json(get)
-  const all=await prisma.campaign.updateMany({where:{activate:true,camp_type:'Referral'},data:{priority:'0'},})
-const getdata =await prisma.campaign.update({where:{uuid:uuid},data:{priority:'1'},});
-//res.json(getdata)
-console.log(all)
-console.log(getdata)   
-res.status(200).send(getdata)
-}
-catch(err){
-console.log(err)
-}
-})
+  
+  console.log(newlist)
+  console.log(oldlist)
+ let uid:string[]=[]
+ for(let i=0;i<oldlist.length;i++){
+  const list=await prisma.campaign.findFirst({where:{priority:newlist[i]}})
+ uid.push(list.uuid)
+ //console.log(list.uuid)
+ }
+ //console.log(uid)
 
+  for (let i= 0; i < oldlist.length; i++) {
+    //console.log(uid[i])
+   const getdata =await prisma.campaign.update({where:{uuid:`${uid[i]}`},data:{priority:oldlist[i]}});  
+ // console.log(getdata)
+  }
 
-// enable priority for Advocate
-
-app.put("/api/referral_camp_advo_priority/:id",async(req,res)=>{
-  const uuid=req.params.id;
-try{  
-  const get=await prisma.campaign.findUnique({where:{uuid:uuid}})
-//  res.json(get)
-  const all=await prisma.campaign.updateMany({where:{activate:true,camp_type:'Advocate'},data:{priority:'0'},})
-const getdata =await prisma.campaign.update({where:{uuid:uuid},data:{priority:'1'},});
-//res.json(getdata)
-console.log(all)
-console.log(getdata)   
-res.status(200).send(getdata)
+  //console.log(get)
 }
 catch(err){
 console.log(err)
@@ -574,7 +582,7 @@ app.post("/s/check_email",async(req,res)=>{
     const client = new shopify.api.clients.Graphql({session:se.sessio});
     
     
-     const price= await prisma.campaign.findFirst({where:{activate:true,camp_type:'Referral',priority:'1'}})
+     const price= await prisma.campaign.findFirst({where:{activate:true,camp_type:'Referral'},orderBy:{priority:'asc'}})
      const member=await prisma.members.findUnique({where:{uuid:userid}})
    const ref=price?.camp_type=="Referral";
    const enable_check=member?.enable==true;
@@ -684,7 +692,7 @@ console.log(send)
 })
 
 
-//advocate get coupon
+//webhoook hit block
 
 app.post("/webhook/d",async(req,res)=>{
   const{ discount_applications,line_items,customer,currency,created_at,note_attributes}=req.body;
@@ -715,7 +723,15 @@ app.post("/webhook/d",async(req,res)=>{
     var  quantity=line_items[0].quantity;
    
    if(aff_id){
-    const camp=await prisma.campaign.findFirst({where:{activate:true,camp_type:'Affiliate',priority:'1'}})
+    const getlist=await prisma.campaign.findMany({where:{camp_type:'Affiliate'},orderBy:{priority:'asc'}})
+    //console.log(count)
+    let uid:any=[]
+    getlist.map((c)=>{uid.push(c.uuid)})
+
+    for (let i= 0; i< uid.length; i++) {
+      
+    const camp=await prisma.campaign.findFirst({where:{uuid:`${uid[i]}`}})
+    console.log(camp)
     let engine = new Engine();
 
 const Rule = {
@@ -758,16 +774,21 @@ let m=customer?.email
 const ma = m.split('.')[1];
 
  const facts = {amount:p,currency:currency,date:d,emaildomain:ma}
-
-engine
+ 
+ let status;
+ await engine
   .run(facts)
-  .then(({ events }) => {
-    events.map(event => console.log(event.params.message))
+  .then(async({ events }) => {
+    events.map(event => status=event.params.message)
   })
+  
 
-  engine
-  .on('success', async(event, almanac) => {
-    console.log('success')
+
+//engine
+ //.on('success', async(event, almanac) => {
+  if(status=='success'){
+    //console.log('success')
+   //if(true){
     const influencer=await prisma.influencer.findUnique({where:{uuid:aff_id}})
     let distype=''
     let q=0
@@ -791,13 +812,19 @@ engine
      }
  
     const sales=await prisma.sales.create({data:{item:item_name,amount:price,advocate_id:aff_id,type:'Affiliate',referral_email:mail}})
-    sales_mail(customer.first_name,influencer.email)
-  })
-  .on('failure', event => {
-   console.log('failed')
-  
-  })
+   // sales_mail(customer.first_name,influencer.email)
 
+    break;
+   // }
+  }
+    
+ // })
+ //.on('failure', event => {
+ else{
+  console.log('failed')
+  }
+  //})
+    }
 
 
    }
@@ -813,10 +840,19 @@ engine
    var sendmail=user?.email
 
    const client = new shopify.api.clients.Graphql({session:ses.Session});
-   const rule= await prisma.campaign.findFirst({where:{activate:true,camp_type:'Advocate',priority:'1'}})
-   const rule1= await prisma.campaign.findFirst({where:{activate:true,camp_type:'Referral',priority:'1'}})
-   let val=parseInt(rule.min_val)
-  console.log(val)
+   const getlist=await prisma.campaign.findMany({where:{camp_type:'Advocate'},orderBy:{priority:'asc'}})
+   //console.log(count)
+   let uid:string[]=[]
+   getlist.map((c)=>{uid.push(c.uuid)})
+
+  // const rule= await prisma.campaign.findFirst({where:{activate:true,camp_type:'Referral'},orderBy:{priority:'asc'}})
+  // const rule1= await prisma.campaign.findFirst({where:{activate:true,camp_type:'Referral',priority:'1'}})
+  // let val=parseInt(rule.min_val)
+ // console.log(val)
+  
+  for (let i= 0; i< uid.length; i++) {
+      
+const rule=await prisma.campaign.findFirst({where:{uuid:`${uid[i]}`}})
   
 let engine = new Engine();
 
@@ -825,21 +861,21 @@ const Rule = {
     all: [{
       fact: 'amount',
       operator:'greaterThan',
-      value: rule1.min_val
+      value: rule.min_val
     }, {
       fact: 'currency',
       operator: 'equal',
-      value: rule1.order_currency
+      value: rule.order_currency
     },
     {
       fact: 'date',
       operator: 'equal',
-      value: rule1.order_date
+      value: rule.order_date
     },
     {
       fact: 'emaildomain',
       operator: 'equal',
-      value:rule1.order_emaildomain
+      value:rule.order_emaildomain
     }
   ]
   },
@@ -862,14 +898,17 @@ const ma = m.split('.')[1];
 
 const facts = {amount:p,currency:currency,date:d,emaildomain:ma}
 
-engine
+let status;
+await engine
   .run(facts)
   .then(({ events }) => {
-    events.map(event => console.log(event.params.message))
+    events.map(event => status=event.params.message)
   })
 
-  engine.on('success',async (event, almanac) => {
-   
+
+
+//  engine.on('success',async (event, almanac) => {
+   if(status=='success'){
      
      if(rule){
      
@@ -976,15 +1015,17 @@ console.log(a)
 //sales mail
 sales_mail(friend_name,member.email)
  
-
+break;
      }
-    
-  }).on('failure', event => {
+   }
+  //}).on('failure', event => {
+  else{
     console.log('failed')
+  }  
  
-   })
+  // })
 
-
+  }
   
     }
 
@@ -1042,18 +1083,28 @@ app.get("/api/get_total_revenue",async(req,res)=>{
   }
 })
 
-// get the sales data
+// get the referral data
 
-app.get("/api/get_sales",async(req,res)=>{
+app.get("/api/get_referral_sales",async(req,res)=>{
   try{  
-    const getdata =await prisma.sales.findMany();
+    const getdata =await prisma.sales.findMany({where:{type:'Referral'}});
     res.json(getdata)  
   }
   catch(err){
     console.log(err)
   }
 })
+// get the Affiliate sales data
 
+app.get("/api/get_Affiliate_sales",async(req,res)=>{
+  try{  
+    const getdata =await prisma.sales.findMany({where:{type:'Affiliate'}});
+    res.json(getdata)  
+  }
+  catch(err){
+    console.log(err)
+  }
+})
 // get the tracker data
 
 app.get("/api/get_track",async(req,res)=>{
@@ -1376,7 +1427,7 @@ app.put("/api/create_script",async(req,res)=>{
   
 const script_tag = new shopify.api.rest.ScriptTag({session:res.locals.shopify.session});
 script_tag.id =229588828450;
-script_tag.src = "https://cdn.jsdelivr.net/gh/karthicksarankalemuthu/scripts@ac2faf84212f3bc484a4165f47764f4fd836fa59/index.js";
+script_tag.src = "https://cdn.jsdelivr.net/gh/karthicksarankalemuthu/scripts@7c6488f390c20e121e88339806afa17dc4f2a60a/index.js";
 await script_tag.save({
   update: true,
 });
@@ -1387,6 +1438,436 @@ console.log(script_tag)
   }
 })
 
+
+
+app.post("/api/metaobject_defination",async(req,res)=>{
+   try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:metaobject_defination,
+         variables: {
+          definition: {
+            name: "popup",
+            type: "popup",
+            fieldDefinitions: [
+              {
+                name: "title",
+                key: "title",
+                type: "single_line_text_field",
+                validations: [
+                  {
+                    name: "max",
+                    value: "30"
+                  }
+                ]
+              },
+              {
+                name: "des",
+                key: "des",
+                type: "multi_line_text_field",
+                validations: [
+                  {
+                    name: "max",
+                    value: "225"
+                  }
+                ]
+              },
+              {
+                name: "popup_bg",
+                key: "popup_bg",
+                type: "single_line_text_field",
+                validations: [
+                  {
+                    name: "max",
+                    value: "30"
+                  }
+                ]
+              },
+              {
+                name: "btn_text",
+                key: "btn_text",
+                type: "single_line_text_field",
+                validations: [
+                  {
+                    name: "max",
+                    value: "30"
+                  }
+                ]
+              },
+              {
+                name: "btn_bg",
+                key: "btn_bg",
+                type: "single_line_text_field",
+                validations: [
+                  {
+                    name: "max",
+                    value: "30"
+                  }
+                ]
+              },
+              {
+                name: "text_color",
+                key: "text_color",
+                type: "single_line_text_field",
+                validations: [
+                  {
+                    name: "max",
+                    value: "30"
+                  }
+                ]
+              },
+              {
+                name: "enable",
+                key: "enable",
+                type: "single_line_text_field",
+                validations: [
+                  {
+                    name: "max",
+                    value: "30"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+      },
+    });
+    console.log(data)
+    
+   }
+   catch(err){
+    console.log(err)
+    res.status(404).send(err)
+   }
+})
+
+
+app.get("/api/get_metaobject_defination",async(req,res)=>{
+  try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:get_metaobject_defination}
+      })
+      res.status(200).send(data)
+  }
+  catch(err){
+  res.status(404).send(err)
+  }
+})
+
+
+app.post("/api/metaobject",async(req,res)=>{
+  try{
+   const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+   const data = await client.query({
+     data: {
+       query:metaobject,
+       variables: {
+        metaobject: {
+          type: "popup",
+          fields: [
+            {
+              key:"title",
+              value:"🎉 Refer & Get 10% Offer"
+            },
+            {
+              key:"des",
+              value:"Invite your friends to get ₹100 off For each friend you refer youll get 20% offer"
+            },
+            {
+              key:"popup_bg",
+              value:"rgba(190, 173, 190, 1)"
+            },
+            {
+              key:"btn_text",
+              value:"Get invite link"
+            },
+            {
+              key:"btn_bg",
+              value:"rgba(233, 77, 77, 1)"
+            },
+            {
+              key:"text_color",
+              value:"rgba(0, 0, 0, 1)"
+            },
+            {
+              key:"enable",
+              value:`${true}`
+            },
+          ]
+        }
+      },
+    },
+   });
+   res.status(200).send(data)
+   
+  }
+  catch(err){
+   console.log(err)
+   res.status(404).send(err)
+  }
+})
+
+app.get("/api/get_metaobject",async(req,res)=>{
+  try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:get_metaobject}
+      })
+      
+      //res.status(200).send(data.body.data.metaobjects.edges[0].node.field)
+      res.status(200).send(data.body.data.metaobjects.edges[0].node)
+  }
+  catch(err){
+  res.status(404).send(err)
+  }
+})
+
+app.get("/api/get_popup_metaobject",async(req,res)=>{
+    
+  try{
+    //let url="gid://shopify/Metaobject/"+gid;
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query: `query{
+          metaobject(id:"gid://shopify/Metaobject/2214592802") {
+            id
+            fields {
+              value
+              key
+            }
+          }
+        }`
+      }
+      })
+      
+      //res.status(200).send(data.body.data.metaobjects.edges[0].node.field)
+      res.status(200).send(data.body.data.metaobject)
+  }
+  catch(err){
+  res.status(404).send(err)
+  }
+})
+
+
+app.put("/api/editpopup_metaobject",async(req,res)=>{
+  const{title,des,popup_bg,btn_text,btn_bg,text_color,enable}=req.body;
+  try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:update_popup_metaobject,
+        variables: {
+          id: "gid://shopify/Metaobject/2214592802",
+          metaobject: {
+            fields: [
+              {
+                key:"title",
+                value:title
+              },
+              {
+                key:"des",
+                value:des
+              },
+              {
+                key:"popup_bg",
+                value:popup_bg
+              },
+              {
+                key:"btn_text",
+                value:btn_text
+              },
+              {
+                key:"btn_bg",
+                value:btn_bg
+              },
+              {
+                key:"text_color",
+                value:text_color
+              },
+              {
+                key:"enable",
+                value:`${true}`
+              },
+            ]
+          }
+        }
+      }
+    })
+
+    res.status(200).send(data)
+    console.log(data)
+  }
+  catch(err){
+    res.status(404).send(err)
+    console.log(err)
+  }
+})
+
+
+app.put("/api/enablepopup_metaobject",async(req,res)=>{
+ // const{enable}=req.body;
+ const{enable}=req.body;
+  let val
+  if(enable==true){
+   val="false"
+  }
+  else{
+    val="true"
+  }
+  console.log(enable)
+  console.log(val)
+  try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:enable_popup_metaobject,
+        variables: {
+          id: "gid://shopify/Metaobject/2214592802",
+          metaobject: {
+            fields: [
+              {
+                key:"enable",
+                value:val
+              }
+            ]
+          }
+        }
+      }
+    })
+
+    res.status(200).send(data.body.data.metaobjectUpdate)
+   // console.log(data)
+  }
+  catch(err){
+    res.status(404).send(err)
+    console.log(err)
+  }
+})
+
+
+
+app.put("/api/update_metaobject_defination",async(req,res)=>{
+  try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:update_metaobject_defination,
+        variables: {
+          id: "gid://shopify/MetaobjectDefinition/380731682",
+          definition: {
+            access: {
+              storefront:"PUBLIC_READ"
+            },
+            capabilities: {
+              publishable: {
+                enabled:true
+              }
+            },
+          }
+        },
+      }
+      })
+      res.status(200).send(data)
+  }
+  catch(err){
+    res.status(404).send(err)
+  }
+})
+
+
+app.delete("/api/delete_metaobjectfielddefination",async(req,res)=>{
+  try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:delete_metaobject_fielddefination,
+    variables: {
+      id: "gid://shopify/MetaobjectDefinition/380469538",
+      definition: {
+        fieldDefinitions: [
+          {
+            delete: {
+              key: "email"
+            }
+          }
+        ]
+      }
+    },
+  }
+})
+res.status(200).send(data)
+  }
+  catch(err){
+    res.status(404).status(err)
+  }
+})
+
+
+app.delete("/api/delete_metaobject",async(req,res)=>{
+  try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:delete_metaobject,
+    variables: {
+      id:"gid://shopify/Metaobject/2214396194",
+    },
+  }
+})
+res.status(200).send(data)
+  }
+  catch(err){
+    res.status(404).status(err)
+  }
+})
+
+app.delete("/api/delete_metaobject_defination",async(req,res)=>{
+  try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:delete_metaobject_defination,
+    variables: {
+      id:"gid://shopify/MetaobjectDefinition/380469538",
+    },
+  }
+})
+res.status(200).send(data)
+  }
+  catch(err){
+    res.status(404).send(err)
+  }
+})
+
+app.put("/api/update_metaobject",async(req,res)=>{
+  try{
+    const client = new shopify.api.clients.Graphql({session:res.locals.shopify.session});
+    const data = await client.query({
+      data: {
+        query:update_metaobject,
+    variables: {
+      id:"gid://shopify/Metaobject/2214592802",
+      metaobject: {
+        capabilities:{
+          publishable:{
+            status:"ACTIVE"
+          },
+        },
+      },
+    },
+  }
+})
+res.status(200).send(data)
+  }
+  catch(err){
+    res.status(404).send(err)
+  }
+})
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
 app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {

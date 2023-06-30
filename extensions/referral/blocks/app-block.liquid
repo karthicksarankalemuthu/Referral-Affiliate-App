@@ -1,14 +1,15 @@
+<div style="background-color:{{ shop.metaobjects['popup']['popup-nk2mmzzc'].popup_bg.value }}"id="container">
+  <p id="title">{{ shop.metaobjects['popup']['popup-nk2mmzzc'].title.value }}</p>
+  <p id="des">{{ shop.metaobjects['popup']['popup-nk2mmzzc'].des.value }}</p>
+  <input
+    type="email"
+    id="text"
+    required
+    placeholder="Enter your email" />
+  <button style="background-color: {{ shop.metaobjects['popup']['popup-nk2mmzzc'].btn_bg.value }}" id="button">{{ shop.metaobjects['popup']['popup-nk2mmzzc'].btn_text.value }}</button>
 
-
-  <div id="container">
-  <p id="title"></p>
-  <p id="des"></p>
-  <input type="email" id="text" required placeholder="Enter your email"/>
-  <button   id="button" >
-    
-  </button>
 </div>
-<button id="btn"></button>
+<button style="background-color: {{ shop.metaobjects['popup']['popup-nk2mmzzc'].btn_bg.value }}" id="btn">🎉 Refer</button>
 <button id="closebtn">&times;</button>
 
 <span></span>
@@ -21,11 +22,12 @@
     "javascript": "btn.js",
     "settings": [],
     "enabled_on": {
-        "templates": ["index"]
-     }
+      "templates": ["index"]
+    }
   }
 {% endschema %}
 
+
 <!-- "enabled_on": {
-  //  "templates": ["index"]
+//  "templates": ["index"]
 //  }-->
